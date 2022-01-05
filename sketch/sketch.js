@@ -279,7 +279,7 @@ function draw() {
         rect(mapX + mapWidth * squaresize + 4 * squaresize + nextMino[i][0] * squaresize 
              + nextOffsets[nextMinoColor-1][0] * squaresize + 0.5 * squaresize,
              mapY + 2 * squaresize + nextMino[i][1] * squaresize + nextOffsets[nextMinoColor-1][1] * squaresize + 0.5 * squaresize,
-             squaresize, squaresize);
+             squaresize, squaresize, 5);
     }
     fill(255);
     rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 7 * squaresize, 6 * squaresize, 6 * squaresize);
@@ -287,7 +287,7 @@ function draw() {
         fill(colors[heldMinoColor - 1]);
         rect(mapX + mapWidth * squaresize + 4 * squaresize + heldMino[i][0] * squaresize + heldMinoOffsets[0] * squaresize + 0.5 * squaresize,
              mapY + 9 * squaresize + heldMino[i][1] * squaresize + heldMinoOffsets[1] * squaresize + 0.5 * squaresize,
-             squaresize, squaresize);
+             squaresize, squaresize, 5);
     }
 
     for(let i = 0; i < mapHeight; i++) {
@@ -303,7 +303,7 @@ function draw() {
             currentMino.forEach(sq => {
                 let y = mapX + (currentMinoY + i + sq[1]) * squaresize;
                 let x = mapY + (currentMinoX + sq[0]) * squaresize;
-                rect(x, y, squaresize, squaresize);
+                rect(x, y, squaresize, squaresize, 5);
             });
             stroke(120);
             break;
@@ -314,7 +314,7 @@ function draw() {
         for (let j = 0; j < mapHeight; j++) {
             if (field[i][j]) {
                 fill(colors[field[i][j] - 1])
-                rect(mapX + i * squaresize, mapY + j * squaresize, squaresize, squaresize);
+                rect(mapX + i * squaresize, mapY + j * squaresize, squaresize, squaresize, 5);
             }
         }
     }
@@ -323,7 +323,7 @@ function draw() {
         let y = mapY + currentMinoY * squaresize + currentMino[i][1] * squaresize;
         if(y >= mapY) {
             fill(colors[currentMinoColor - 1]);
-            rect(x, y, squaresize, squaresize);
+            rect(x, y, squaresize, squaresize, 5);
         }
     }
     fill(255);
