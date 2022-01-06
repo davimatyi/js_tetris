@@ -1,14 +1,10 @@
 let field = [];
 
-let currentMino = [];
-let currentMinoX = Math.floor(mapWidth / 2) - 1, currentMinoY = 0, currentMinoColor = 0;
-let nextMino = [];
-let nextMinoColor = 0;
-let heldMino = [];
-let heldMinoColor = 0;
+let currentMino = null;
+let nextMino = null;
+let heldMino = null;
+
 let swapped = false;
-let heldMinoOffsets = [0, 0]
-let currentMinoOffsets = [0, 0]
 
 let droptimer = 0, moveTimer = 0;
 
@@ -29,14 +25,9 @@ function initGame() {
         }
     }
     let ind = Math.floor(Math.random() * tetrominoes.length);
-    currentMinoColor = ind + 1;
-    currentMinoOffsets = nextOffsets[ind].slice();
-    currentMino = tetrominoes[ind].slice();
+    currentMino = new Tetromino(ind, initialPosition, field);
     ind = Math.floor(Math.random() * tetrominoes.length);
-    nextMinoColor = ind + 1;
-    nextMino = tetrominoes[ind].slice();
-    heldMino = [];
-    heldMinoColor = 0;
+    nextMino = new Tetromino(ind, initialPosition, field);
     gameLost = false;
     gamePaused = false;
     swapped = false;
@@ -84,112 +75,66 @@ function checkTetris() {
 }
 
 function checkFail() {
-    for(let i = 0; i < currentMino.length; i++) {
-        if(field[currentMinoX + currentMino[i][0]][currentMinoY + currentMino[i][1]]) gameLost = true;
-    }
+    gameLost = gameLost || currentMino.checkFail();
 }
 
 function drop() {
     if(gameLost || gamePaused) return;
     droptimer = 0;
-    let b = false;
-    currentMino.forEach(sq => {
-        let y = currentMinoY + sq[1];
-        let x = currentMinoX + sq[0];
-        if (y == mapHeight - 1 || field[x][y + 1]) b = true;
-    });
+    let b = currentMino.drop();
     if (b) {
-        currentMino.forEach(sq => {
-            field[currentMinoX + sq[0]][currentMinoY + sq[1]] = currentMinoColor;
-        });
         currentMino = nextMino;
-        currentMinoColor = nextMinoColor;
-        currentMinoOffsets = nextOffsets[nextMinoColor-1].slice();
         let ind = Math.floor(Math.random() * tetrominoes.length);
-        nextMinoColor = ind + 1;
-        nextMino = tetrominoes[ind].slice();
-        currentMinoX = Math.floor(mapWidth / 2) - 1;
-        currentMinoY = 0;
+        nextMino = new Tetromino(ind, initialPosition, field);
         checkTetris();
         checkFail();
         swapped = false;
     } else {
-        currentMinoY++;
         if(keyIsDown(DOWN_ARROW))
             score += 1;
     }
-
+}
+function hardDrop() {
+    if(gameLost || gamePaused) return;
+    dropTimer = 0;
+    let p = currentMino.hardDrop();
+    currentMino = nextMino;
+    let ind = Math.floor(Math.random() * tetrominoes.length);
+    nextMino = new Tetromino(ind, initialPosition, field);
+    checkTetris();
+    checkFail();
+    swapped = false;
+    score += 2 * p;
 }
 
 function spin() {
     if(gameLost || gamePaused) return;
-    let temp = currentMino.slice();
-    for (let i = 0; i < temp.length; i++) {
-        let c = temp[i].slice();
-        temp[i] = [-1 * c[1], c[0]];
-        // TODO check if straight piece is outside of map
-        if(currentMinoX + temp[i][0] < 0) {
-            moveRight();
-        }
-        if(currentMinoX + temp[i][0] >= mapWidth) {
-            moveLeft();
-        }
-    }
-    for (let i = 0; i < temp.length; i++) {
-        if (field[currentMinoX + temp[i][0]][currentMinoY + temp[i][1]]) return;
-    }
-    currentMino = temp;
-    let o = currentMinoOffsets.slice();
-    currentMinoOffsets = [ -1 * o[1], o[0]];
+    currentMino.spin();
 }
 
 function moveLeft() {
     if(gameLost || gamePaused) return;
-    let b = false;
-    currentMino.forEach(sq => {
-        let y = currentMinoY + sq[1];
-        let x = currentMinoX + sq[0];
-        if (x == 0 || field[x - 1][y]) b = true;
-    });
-    if (!b) currentMinoX--;
+    currentMino.moveLeft();
 }
 
 function moveRight() {
     if(gameLost || gamePaused) return;
-    let b = false;
-    currentMino.forEach(sq => {
-        let y = currentMinoY + sq[1];
-        let x = currentMinoX + sq[0];
-        if (x == mapWidth - 1 || field[x + 1][y]) b = true;
-    });
-    if (!b) currentMinoX++;
+    currentMino.moveRight();
 }
 
 function hold() {
     if(gameLost || gamePaused || swapped) return;
-    if(heldMinoColor == 0) {
+    if(heldMino == null) {
         heldMino = currentMino;
-        heldMinoColor = currentMinoColor;
-        heldMinoOffsets = currentMinoOffsets;
         currentMino = nextMino;
-        currentMinoColor = nextMinoColor;
         let ind = Math.floor(Math.random() * tetrominoes.length);
-        currentMinoOffsets = nextOffsets[ind].slice();
-        nextMinoColor = ind + 1;
-        nextMino = tetrominoes[ind].slice();
-        currentMinoX = Math.floor(mapWidth / 2) - 1;
-        currentMinoY = 0;
+        nextMino = new Tetromino(ind, initialPosition, field);
         checkFail();
     } else {
         let temp = heldMino;
-        let tempc = heldMinoColor;
-        let temph = heldMinoOffsets;
         heldMino = currentMino;
-        heldMinoColor = currentMinoColor;
-        heldMinoOffsets = currentMinoOffsets;
         currentMino = temp;
-        currentMinoColor = tempc;
-        currentMinoOffsets = temph;
+        currentMino.setLocation(initialPosition);
     }
     swapped = true;
 }
@@ -210,11 +155,7 @@ function keyPressed() {
             break;
         case 32:
             if(gameLost) initGame();
-            else
-                do {
-                    drop();
-                    score += 2;
-                } while(currentMinoY != 0);
+            else hardDrop();
             break;
         case 27:
             gamePaused = ! gamePaused;
@@ -238,43 +179,21 @@ function draw() {
     clear();
     fill(255);
     stroke(120);
+
     rect(mapX, mapY, mapWidth * squaresize, mapHeight * squaresize);
+
     rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY, 6 * squaresize, 6 * squaresize);
-    for(let i = 0; i < nextMino.length; i++) {
-        fill(colors[nextMinoColor - 1]);
-        rect(mapX + mapWidth * squaresize + 4 * squaresize + nextMino[i][0] * squaresize 
-             + nextOffsets[nextMinoColor-1][0] * squaresize + 0.5 * squaresize,
-             mapY + 2 * squaresize + nextMino[i][1] * squaresize + nextOffsets[nextMinoColor-1][1] * squaresize + 0.5 * squaresize,
-             squaresize, squaresize, 5);
-    }
+    nextMino.drawAtPos([mapX + mapWidth * squaresize + 4.5 * squaresize,
+                        mapY + 2.5 * squaresize]);
+
     fill(255);
     rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 7 * squaresize, 6 * squaresize, 6 * squaresize);
-    for(let i = 0; i < heldMino.length; i++) {
-        fill(colors[heldMinoColor - 1]);
-        rect(mapX + mapWidth * squaresize + 4 * squaresize + heldMino[i][0] * squaresize + heldMinoOffsets[0] * squaresize + 0.5 * squaresize,
-             mapY + 9 * squaresize + heldMino[i][1] * squaresize + heldMinoOffsets[1] * squaresize + 0.5 * squaresize,
-             squaresize, squaresize, 5);
+    if(heldMino != null) {
+        heldMino.drawAtPos([mapX + mapWidth * squaresize + 4.5 * squaresize,
+                            mapY + 9.5 * squaresize]);
     }
 
-    for(let i = 0; i < mapHeight; i++) {
-        let b = false;
-        currentMino.forEach(sq => {
-            let y = currentMinoY + i + sq[1];
-            let x = currentMinoX + sq[0];
-            if (y == mapHeight - 1 || field[x][y + 1]) b = true;
-        });
-        if(b) {
-            fill(240);
-            stroke(180);
-            currentMino.forEach(sq => {
-                let y = mapX + (currentMinoY + i + sq[1]) * squaresize;
-                let x = mapY + (currentMinoX + sq[0]) * squaresize;
-                rect(x, y, squaresize, squaresize, 5);
-            });
-            stroke(120);
-            break;
-        }
-    }
+    currentMino.drawGhost();
 
     for (let i = 0; i < mapWidth; i++) {
         for (let j = 0; j < mapHeight; j++) {
@@ -284,16 +203,9 @@ function draw() {
             }
         }
     }
-    for (let i = 0; i < currentMino.length; i++) {
-        let x = mapX + currentMinoX * squaresize + currentMino[i][0] * squaresize;
-        let y = mapY + currentMinoY * squaresize + currentMino[i][1] * squaresize;
-        if(y >= mapY) {
-            fill(colors[currentMinoColor - 1]);
-            rect(x, y, squaresize, squaresize, 5);
-        }
-    }
-    fill(255);
+    currentMino.drawOnMap();
 
+    fill(255);
     if(! gameLost && ! gamePaused) {
         if (droptimer > Math.max(minDropInterval, dropInterval - level / 30)) drop();
         droptimer += deltaTime / 1000.0;
@@ -374,8 +286,4 @@ function draw() {
         textSize(14);
         text("Press space to restart", mapX + (mapWidth * squaresize) / 2, mapY + (mapHeight * squaresize) / 2 + 18)
     }
-
-    fill(255);
-
-
 }
