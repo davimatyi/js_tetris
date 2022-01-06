@@ -17,6 +17,7 @@ let score = 0;
 
 let highscores = {};
 
+
 function initGame() {
     for (let i = 0; i < mapWidth; i++) {
         field[i] = []
@@ -167,7 +168,7 @@ function keyPressed() {
 }
 
 function setup() {
-    createCanvas(mapX + mapWidth * squaresize + 10 * squaresize, mapY + mapHeight * squaresize + 10);
+    createCanvas(canvasWidth, canvasHeight);
     frameRate(200);
 
     initGame();    
@@ -181,19 +182,16 @@ function draw() {
     stroke(120);
 
     rect(mapX, mapY, mapWidth * squaresize, mapHeight * squaresize);
-
     rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY, 6 * squaresize, 6 * squaresize);
+    rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 7 * squaresize, 6 * squaresize, 6 * squaresize);
+
     nextMino.drawAtPos([mapX + mapWidth * squaresize + 4.5 * squaresize,
                         mapY + 2.5 * squaresize]);
 
-    fill(255);
-    rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 7 * squaresize, 6 * squaresize, 6 * squaresize);
     if(heldMino != null) {
         heldMino.drawAtPos([mapX + mapWidth * squaresize + 4.5 * squaresize,
                             mapY + 9.5 * squaresize]);
     }
-
-    currentMino.drawGhost();
 
     for (let i = 0; i < mapWidth; i++) {
         for (let j = 0; j < mapHeight; j++) {
@@ -203,14 +201,13 @@ function draw() {
             }
         }
     }
+    currentMino.drawGhost();
     currentMino.drawOnMap();
 
-    fill(255);
     if(! gameLost && ! gamePaused) {
         if (droptimer > Math.max(minDropInterval, dropInterval - level / 30)) drop();
         droptimer += deltaTime / 1000.0;
     }
-
 
     if(keyIsDown(DOWN_ARROW)) {
         moveTimer += deltaTime / 1000.0;
@@ -269,6 +266,7 @@ function draw() {
 
 
     if(gamePaused) {
+        // filter(BLUR, 10);
         fill(255);
         rect(mapX + (mapWidth * squaresize) / 2 - 100, mapY + (mapHeight * squaresize) / 2 - 25, 200, 50);
         fill(0);

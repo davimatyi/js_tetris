@@ -6,6 +6,8 @@ const dropInterval = 1;
 const minDropInterval = 0.05;
 const moveInterval = 0.1, initialMoveDelay = 0.2;
 const initialPosition = [Math.floor(mapWidth / 2) -1, 0];
+const canvasWidth = mapX + mapWidth * squaresize + 10 * squaresize;
+const canvasHeight = mapY + mapHeight * squaresize + squaresize
 
 const tetrominoes = [
     [[-1, 0], [0, 0], [1, 0], [2, 0]],      // straight
