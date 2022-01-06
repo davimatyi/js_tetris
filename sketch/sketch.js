@@ -58,6 +58,8 @@ let clearedLines = 0;
 let level = 0;
 let score = 0;
 
+let highscores = {};
+
 function initGame() {
     for (let i = 0; i < mapWidth; i++) {
         field[i] = []
@@ -164,6 +166,7 @@ function spin() {
     for (let i = 0; i < temp.length; i++) {
         let c = temp[i].slice();
         temp[i] = [-1 * c[1], c[0]];
+        // TODO check if straight piece is outside of map
         if(currentMinoX + temp[i][0] < 0) {
             moveRight();
         }
@@ -266,6 +269,8 @@ function setup() {
     frameRate(200);
 
     initGame();    
+    highscores = getItem('highscores');
+    // TODO finish highscores
 }
 
 function draw() {
@@ -363,32 +368,14 @@ function draw() {
     } else {
         moveTimer = 0;
     }
-
     
-    fill(255);
-    noStroke();
-    rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY - 0.5 * squaresize, 60, 25);
-    stroke(120);
-    fill(0);
-    textSize(24);
-    textAlign(LEFT, CENTER);
-    text("Next", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY);
-
-    fill(255);
-    noStroke();
-    rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY + 6.5 * squaresize, 60, 25);
-    stroke(120);
-    fill(0);
-    textSize(24);
-    textAlign(LEFT, CENTER);
-    text("Hold", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY + 7 * squaresize);
-
-
     fill(255);
     rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 14 * squaresize, 6 * squaresize, 1.5 * squaresize);
     rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 16.25 * squaresize, 6 * squaresize, 1.5 * squaresize);
     rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 18.5 * squaresize, 6 * squaresize, 1.5 * squaresize);
     noStroke();
+    rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY - 0.5 * squaresize, 60, 25);
+    rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY + 6.5 * squaresize, 60, 25);
     rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY + 13.5 * squaresize, 75, 25);
     rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY + 15.75 * squaresize, 70, 25);
     rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY + 18 * squaresize, 70, 25);
@@ -396,6 +383,8 @@ function draw() {
     fill(0);
     textSize(24);
     textAlign(LEFT, CENTER);
+    text("Next", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY);
+    text("Hold", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY + 7 * squaresize);
     text("Score", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY + 14 * squaresize);
     text("Level", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY + 16.25 * squaresize);
     text("Lines", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY + 18.5 * squaresize);
