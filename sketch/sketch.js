@@ -17,6 +17,20 @@ let score = 0;
 
 let highscores = {};
 
+let nextPieceWindow;
+let heldPieceWindow;
+let scoreWindow;
+let linesWindow;
+let levelWindow;
+
+let pauseWindow;
+let gameOverWindow;
+let menuWindow;
+// TODO finish implementing windows
+
+let scoreLabel;
+let linesLabel;
+let levelLabel;
 
 function initGame() {
     for (let i = 0; i < mapWidth; i++) {
@@ -29,12 +43,34 @@ function initGame() {
     currentMino = new Tetromino(ind, initialPosition, field);
     ind = Math.floor(Math.random() * tetrominoes.length);
     nextMino = new Tetromino(ind, initialPosition, field);
+
     gameLost = false;
     gamePaused = false;
     swapped = false;
     score = 0;
     level = 0;
     clearedLines = 0;
+
+    nextPieceWindow = new Window(mapX + mapWidth * squaresize + 2 * squaresize, mapY, 6 * squaresize, 6 * squaresize);
+    heldPieceWindow = new Window(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 7 * squaresize, 6 * squaresize, 6 * squaresize);
+    scoreWindow = new Window(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 14 * squaresize, 6 * squaresize, 1.5 * squaresize);
+    levelWindow = new Window(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 16.25 * squaresize, 6 * squaresize, 1.5 * squaresize);
+    linesWindow = new Window(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 18.5 * squaresize, 6 * squaresize, 1.5 * squaresize);
+    nextPieceWindow.setTitle("Next");
+    heldPieceWindow.setTitle("Hold");
+    scoreWindow.setTitle("Score");
+    levelWindow.setTitle("Level");
+    linesWindow.setTitle("Lines");
+
+    scoreLabel = new Label("0", mapX + mapWidth * squaresize + 7.5 * squaresize, mapY + 14.8 * squaresize);
+    levelLabel = new Label("0", mapX + mapWidth * squaresize + 7.5 * squaresize, mapY + 17.05 * squaresize);
+    linesLabel = new Label("0", mapX + mapWidth * squaresize + 7.5 * squaresize, mapY + 19.3 * squaresize);
+    scoreLabel.setAlignment(RIGHT);
+    levelLabel.setAlignment(RIGHT);
+    linesLabel.setAlignment(RIGHT);
+    scoreWindow.addComponent(scoreLabel);
+    levelWindow.addComponent(levelLabel);
+    linesWindow.addComponent(linesLabel);
 }
 
 function checkTetris() {
@@ -182,8 +218,15 @@ function draw() {
     stroke(120);
 
     rect(mapX, mapY, mapWidth * squaresize, mapHeight * squaresize);
-    rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY, 6 * squaresize, 6 * squaresize);
-    rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 7 * squaresize, 6 * squaresize, 6 * squaresize);
+    scoreLabel.setText(score);
+    levelLabel.setText(level);
+    linesLabel.setText(clearedLines);
+
+    nextPieceWindow.draw();
+    heldPieceWindow.draw();
+    scoreWindow.draw();
+    levelWindow.draw();
+    linesWindow.draw();
 
     nextMino.drawAtPos([mapX + mapWidth * squaresize + 4.5 * squaresize,
                         mapY + 2.5 * squaresize]);
@@ -238,31 +281,6 @@ function draw() {
     } else {
         moveTimer = 0;
     }
-    
-    fill(255);
-    rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 14 * squaresize, 6 * squaresize, 1.5 * squaresize);
-    rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 16.25 * squaresize, 6 * squaresize, 1.5 * squaresize);
-    rect(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 18.5 * squaresize, 6 * squaresize, 1.5 * squaresize);
-    noStroke();
-    rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY - 0.5 * squaresize, 60, 25);
-    rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY + 6.5 * squaresize, 60, 25);
-    rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY + 13.5 * squaresize, 75, 25);
-    rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY + 15.75 * squaresize, 70, 25);
-    rect(mapX + mapWidth * squaresize + 2.5 * squaresize - 5, mapY + 18 * squaresize, 70, 25);
-    stroke(120);
-    fill(0);
-    textSize(24);
-    textAlign(LEFT, CENTER);
-    text("Next", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY);
-    text("Hold", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY + 7 * squaresize);
-    text("Score", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY + 14 * squaresize);
-    text("Level", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY + 16.25 * squaresize);
-    text("Lines", mapX + mapWidth * squaresize + 2.5 * squaresize, mapY + 18.5 * squaresize);
-    textSize(32);
-    textAlign(RIGHT, CENTER);
-    text(score,        mapX + mapWidth * squaresize + 7.5 * squaresize, mapY + 14.8 * squaresize);
-    text(level,        mapX + mapWidth * squaresize + 7.5 * squaresize, mapY + 17.05 * squaresize);
-    text(clearedLines, mapX + mapWidth * squaresize + 7.5 * squaresize, mapY + 19.3 * squaresize);
 
 
     if(gamePaused) {

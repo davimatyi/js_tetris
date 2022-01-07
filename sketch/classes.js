@@ -244,7 +244,7 @@ class Button extends UIComponent {
 }
 
 class Label extends UIComponent {
-    constructor(x, y, text) {
+    constructor(text, x, y) {
         super(x, y);
         this.text = text;
         this.alignment = CENTER;
@@ -252,6 +252,10 @@ class Label extends UIComponent {
 
     setAlignment(alignment) {
         this.alignment = alignment;
+    }
+
+    setText(text) {
+        this.text = text + "";
     }
 
     draw() {
@@ -356,7 +360,7 @@ class Window extends UIComponent {
         rect(this.x, this.y, this.w, this.h);
         if(this.title != null) {
             textSize(24);
-            textAlign(LEFT);
+            textAlign(LEFT, CENTER);
             noStroke();
             rect(this.x + 15, this.y - 1, textWidth(this.title) + 10, 2);
             stroke(120);
