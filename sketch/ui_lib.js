@@ -6,9 +6,12 @@
     backgroundColor = [255, 255, 255];
     foregroundColor = [0, 0, 0];
     textSize = 32;
-    constructor(x, y) {
+
+    constructor(x, y, w, h) {
         this.x = x;
         this.y = y;
+        this.w = w;
+        this.h = h;
     }
 
     getPosition() {
@@ -46,9 +49,7 @@ class Button extends UIComponent {
         console.log("Button pressed");
     }
     constructor(x, y, w, h, text) {
-        super(x, y);
-        this.w = w;
-        this.h = h;
+        super(x, y, w, h);
         this.text = text;
         this.pressed = false;
     }
@@ -99,7 +100,7 @@ class Button extends UIComponent {
 
 class Label extends UIComponent {
     constructor(text, x, y) {
-        super(x, y);
+        super(x, y, 0, 0);
         this.text = text;
         this.alignment = CENTER;
     }
@@ -130,9 +131,7 @@ class Input extends UIComponent {
     typed = false;
     
     constructor(x, y, w, h) {
-        super(x, y);
-        this.w = w;
-        this.h = h;
+        super(x, y, w, h);
     }
 
     getText() {
@@ -195,9 +194,7 @@ class Window extends UIComponent {
     components = [];
 
     constructor(x, y, w, h) {
-        super(x,y);
-        this.w = w;
-        this.h = h;
+        super(x,y,w,h);
     }
 
     setTitle(title) {
@@ -224,6 +221,49 @@ class Window extends UIComponent {
         }
         this.components.forEach(comp => comp.draw());
     }
+}
 
+class Table extends UIComponent {
+    content = null;
+    flipped = false;
 
+    constructor(x, y, w, h, rows, cols, content) {
+        super(x, y, w, h);
+        this.rows = rows;
+        this.cols = cols;
+        this.content = content;
+        this.cellWidth = this.w / cols;
+        this.cellHeight = this.h / rows;
+        this.textSize = 24;
+    }
+
+    flip() {
+        this.flipped = ! this.flipped;
+    }
+
+    draw() {
+        stroke(120);
+        fill(this.backgroundColor);
+        rect(this.x, this.y, this.w, this.h);
+        for(let i = 1; i < this.rows; i++) {
+            line(this.x + 5, this.y + this.cellHeight * i, this.x + this.w - 5, this.y + this.cellHeight * i);
+        }
+        for(let i = 1; i < this.cols; i++) {
+            line(this.x + this.cellWidth * i, this.y + 5, this.x + this.cellWidth * i, this.y + this.h - 5);
+        }
+        fill(this.foregroundColor);
+        textSize(this.textSize);
+        textAlign(CENTER, CENTER);
+        if(this.content != null) {
+            for(let i = 0; i < (this.content.length > this.rows ? this.rows : this.content.length); i++) {
+                for(let j = 0; j < (this.content[i].length > this.cols ? this.cols : this.content[i].length); j++) {
+                    if(this.flipped)
+                        text(this.content[this.content.length - (i + 1)][j], this.x + j * this.cellWidth + this.cellWidth / 2, this.y + i * this.cellHeight + this.cellHeight / 2);
+                    else
+                        text(this.content[i][j], this.x + j * this.cellWidth + this.cellWidth / 2, this.y + i * this.cellHeight + this.cellHeight / 2);
+                }
+            }
+        }
+        textSize(32);
+    }
 }

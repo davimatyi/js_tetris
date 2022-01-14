@@ -9,6 +9,7 @@ let swapped = false;
 let droptimer = 0, moveTimer = 0;
 
 let gameOver = false;
+let nameInputShowing = false;
 let gamePaused = false;
 let mainMenu = true;
 
@@ -16,22 +17,26 @@ let clearedLines = 0;
 let level = 0;
 let score = 0;
 
-let highscores = {};
+let highscores = null;
 
 let nextPieceWindow;
 let heldPieceWindow;
 let scoreWindow;
 let linesWindow;
 let levelWindow;
+let nameInputWindow;
 
 let pauseWindow;
 let gameOverWindow;
 let menuWindow;
-// TODO finish implementing windows
 
 let scoreLabel;
 let linesLabel;
 let levelLabel;
+
+let nameInput;
+
+let highscoreTable;
 
 function initGame() {
     for (let i = 0; i < mapWidth; i++) {
@@ -52,6 +57,31 @@ function initGame() {
     score = 0;
     level = 0;
     clearedLines = 0;
+}
+
+function handleGameOver() {
+    filter(BLUR, 5);
+    if (highscores == null || score > highscores[0][1]) nameInputShowing = true;
+}
+
+function addHighScore() {
+    let name = nameInput.getText();
+    console.log(name);
+    if(highscores != null) {
+        let i = 0;
+        while(i < 5 && i < highscores.length && highscores[i][1] < score) i++;
+        if(i < highscores.length)
+            highscores.splice(i, 0, [name, score]);
+        else
+            highscores.push([name, score]);
+        if(highscores.length > 5) highscores.shift();
+    } else {
+        highscores = [
+            [name, score]
+        ];
+    }
+    storeItem("highscores", highscores);
+    nameInputShowing = false;
 }
 
 function checkTetris() {
@@ -94,7 +124,7 @@ function checkTetris() {
 
 function checkFail() {
     gameOver = gameOver || currentMino.checkFail();
-    if(gameOver) filter(BLUR, 5);
+    if (gameOver) handleGameOver();
 }
 
 function drop() {
@@ -178,7 +208,7 @@ function keyPressed() {
             break;
         case 27:
             gamePaused = !gamePaused;
-            if(gamePaused) filter(BLUR, 5);
+            if (gamePaused) filter(BLUR, 5);
             break;
         case 67:
             hold();
@@ -268,7 +298,6 @@ function setup() {
     initGame();
     mainMenu = true;
     highscores = getItem('highscores');
-    // TODO finish highscores
 
     nextPieceWindow = new Window(mapX + mapWidth * squaresize + 2 * squaresize, mapY, 6 * squaresize, 6 * squaresize);
     heldPieceWindow = new Window(mapX + mapWidth * squaresize + 2 * squaresize, mapY + 7 * squaresize, 6 * squaresize, 6 * squaresize);
@@ -291,9 +320,13 @@ function setup() {
     levelWindow.addComponent(levelLabel);
     linesWindow.addComponent(linesLabel);
 
+    highscoreTable = new Table(canvasWidth / 2 - 190, 400, 380, 200, 5, 2, highscores);
+    highscoreTable.flip();
+
     menuWindow = new Window(canvasWidth / 2 - 200, 75, 400, 550);
     pauseWindow = new Window(canvasWidth / 2 - 200, 100, 400, 450);
-    gameOverWindow = new Window(canvasWidth / 2 - 200, 100, 400, 500);
+    gameOverWindow = new Window(canvasWidth / 2 - 200, 100, 400, 510);
+    nameInputWindow = new Window(canvasWidth / 2 - 200, 300, 400, 250);
 
     let menuNewGameButton = new Button(canvasWidth / 2 - 100, 175, 200, 75, "New game");
     let pauseNewGameButton = new Button(canvasWidth / 2 - 100, 350, 200, 60, "New game");
@@ -302,13 +335,15 @@ function setup() {
     let pauseExitButton = new Button(canvasWidth / 2 - 100, 450, 200, 60, "Exit to menu");
     let overExitButton = new Button(canvasWidth / 2 - 100, 300, 200, 60, "Exit to menu");
     let menuExitButton = new Button(canvasWidth / 2 - 100, 300, 200, 60, "Quit");
+    let nameOkButton = new Button(canvasWidth / 2 - 100, 450, 200, 60, "Ok");
+    nameInput = new Input(canvasWidth / 2 - 150, 350, 300, 75);
     menuNewGameButton.onClick(initGame);
     pauseNewGameButton.onClick(initGame);
     overNewGameButton.onClick(initGame);
     resumeButton.onClick(function () {
         gamePaused = false;
     });
-    pauseExitButton.onClick(function() {
+    pauseExitButton.onClick(function () {
         gamePaused = false;
         mainMenu = true;
         filter(BLUR, 5);
@@ -318,6 +353,8 @@ function setup() {
         mainMenu = true;
         filter(BLUR, 5);
     });
+    nameOkButton.onClick(addHighScore);
+    nameInput.onActionPerformed(addHighScore);
     menuWindow.addComponent(menuNewGameButton);
     menuWindow.addComponent(menuExitButton);
     pauseWindow.addComponent(pauseNewGameButton);
@@ -328,6 +365,15 @@ function setup() {
     menuWindow.addComponent(new Label("Tetris", canvasWidth / 2, 125));
     pauseWindow.addComponent(new Label("Paused", canvasWidth / 2, 150));
     gameOverWindow.addComponent(new Label("Game over", canvasWidth / 2, 150));
+    menuWindow.addComponent(highscoreTable);
+    gameOverWindow.addComponent(highscoreTable);
+    nameInputWindow.addComponent(nameInput);
+    nameInputWindow.addComponent(nameOkButton);
+    let label = new Label("Enter your name", canvasWidth / 2 - 150, 325);
+    label.setAlignment(LEFT);
+    label.setTextSize(24);
+    nameInputWindow.addComponent(label);
+
 
     renderGameUi();
     filter(BLUR, 5);
@@ -338,7 +384,10 @@ function draw() {
         menuWindow.draw();
     } else if (gamePaused) {
         pauseWindow.draw();
-    } else if (gameOver) {
+    } else if (nameInputShowing) {
+        nameInputWindow.draw();
+    }
+    else if (gameOver) {
         gameOverWindow.draw();
     } else {
         renderGameUi();
